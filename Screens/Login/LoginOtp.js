@@ -8,6 +8,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Modal,
+  Linking,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -27,6 +28,7 @@ const PhoneNumberInput = () => {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const navigation = useNavigation();
 
   const checkUserExists = async (phoneNumber) => {
@@ -40,6 +42,12 @@ const PhoneNumberInput = () => {
   const sendOtp = async () => {
     if (!phoneNumber || phoneNumber.length !== 10) {
       setModalMessage(t('invalidPhoneNumber') || 'Please enter a valid 10-digit phone number');
+      setShowModal(true);
+      return;
+    }
+
+    if (!agreedToTerms) {
+      setModalMessage('Please agree to the Terms and Conditions to continue');
       setShowModal(true);
       return;
     }
@@ -80,6 +88,14 @@ const PhoneNumberInput = () => {
     setModalMessage('');
   };
 
+  const openTermsAndConditions = () => {
+    Linking.openURL('https://www.ecohomely.com/custterms').catch(err => {
+      console.error('Error opening terms and conditions:', err);
+      setModalMessage('Unable to open Terms and Conditions');
+      setShowModal(true);
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.contentContainer}>
@@ -110,6 +126,34 @@ const PhoneNumberInput = () => {
             accessibilityRole="text"
           />
         </View>
+      </View>
+
+      <View style={styles.spacer} />
+
+      <View style={styles.termsContainer}>
+        <TouchableOpacity
+          style={styles.checkboxContainer}
+          onPress={() => setAgreedToTerms(!agreedToTerms)}
+          accessibilityLabel="Terms and conditions checkbox"
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: agreedToTerms }}
+        >
+          <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
+            {agreedToTerms && (
+              <CustomText style={styles.checkmark}>✓</CustomText>
+            )}
+          </View>
+          <View style={styles.termsTextContainer}>
+            <CustomText style={styles.termsText}>
+              I agree with{' '}
+            </CustomText>
+            <TouchableOpacity onPress={openTermsAndConditions}>
+              <CustomText style={styles.termsLink}>
+                Terms and Conditions
+              </CustomText>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity
@@ -159,7 +203,7 @@ const getStyles = (theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      justifyContent: 'space-between',
+      justifyContent: 'flex-start',
       alignItems: 'center',
       padding: 20,
       backgroundColor: theme === 'light' ? '#fff' : '#1A1A1A',
@@ -168,6 +212,9 @@ const getStyles = (theme) =>
     contentContainer: {
       width: '100%',
       alignItems: 'center',
+    },
+    spacer: {
+      flex: 1,
     },
     label: {
       fontSize: 20,
@@ -203,6 +250,52 @@ const getStyles = (theme) =>
       height: 40,
       fontSize: 18,
       color: theme === 'light' ? '#000' : '#e5e5e7',
+    },
+    termsContainer: {
+      width: '100%',
+      marginBottom: 10,
+    },
+    checkboxContainer: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      paddingHorizontal: 5,
+    },
+    checkbox: {
+      width: 20,
+      height: 20,
+      borderRadius: 4,
+      borderWidth: 2,
+      borderColor: theme === 'light' ? '#333' : '#e5e5e7',
+      marginRight: 10,
+      marginTop: 2,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme === 'light' ? '#fff' : '#1A1A1A',
+    },
+    checkboxChecked: {
+      backgroundColor: '#333',
+      borderColor: '#333',
+    },
+    checkmark: {
+      color: '#fff',
+      fontSize: 12,
+      fontWeight: 'bold',
+    },
+    termsTextContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+    },
+    termsText: {
+      fontSize: 14,
+      color: theme === 'light' ? '#000' : '#e5e5e7',
+      lineHeight: 20,
+    },
+    termsLink: {
+      fontSize: 14,
+      color: '#007AFF',
+      textDecorationLine: 'underline',
     },
     button: {
       backgroundColor: '#333',

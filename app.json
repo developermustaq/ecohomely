@@ -58,16 +58,14 @@
       ],
       "expo-localization"
     ],
-    "extra": {
-      "eas": {
-        "projectId": "91eec2d0-c9d4-4a3c-aad9-c21ffd501e3e"
-      }
-    },
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "updates": {
-      "url": "https://u.expo.dev/91eec2d0-c9d4-4a3c-aad9-c21ffd501e3e"
-    }
+    "extra": {
+      "eas": {
+        "projectId": "ae2439ae-a14f-4d0b-96de-3b624f5b2a10"
+      }
+    },
+    "owner": "mustaq21"
   }
 }
