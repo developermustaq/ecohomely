@@ -89,7 +89,6 @@ const OtpVerification = ({ navigation }) => {
       
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
-        await AsyncStorage.setItem('uid', userDoc.id);
         return userDoc.data();
       } else {
         return null;
@@ -117,12 +116,14 @@ const OtpVerification = ({ navigation }) => {
   
       const result = await confirmation.confirm(otpString);
   
-      if (result) {
+            if (result) {
         const user = result.user;
+        const firebaseUid = user.uid;
         const phoneWithoutPlus = phoneNumber.replace('+91', '').trim();
         const userData = await getUserByPhoneNumber(db, phoneWithoutPlus);
-  
+
         if (userData) {
+          await AsyncStorage.setItem('uid', firebaseUid);
           navigation.replace('Location');
         }
       } else {

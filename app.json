@@ -2,7 +2,7 @@
   "expo": {
     "name": "Ecohomely",
     "slug": "Ecohomely",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
@@ -33,6 +33,7 @@
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.ecohomely.user",
+      "versionCode": 5,
       "googleServicesFile": "./google-services.json"
     },
     "web": {
@@ -46,6 +47,11 @@
         {
           "ios": {
             "useFrameworks": "static"
+          },
+          "android": {
+            "targetSdkVersion": 35,
+            "compileSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
           }
         }
       ],
@@ -58,9 +64,7 @@
       ],
       "expo-localization"
     ],
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.1.0",
     "extra": {
       "eas": {
         "projectId": "ae2439ae-a14f-4d0b-96de-3b624f5b2a10"
