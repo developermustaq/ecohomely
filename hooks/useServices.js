@@ -51,7 +51,8 @@ function useServices(city, cityLoading) {
         description: doc.data().description,
         impressions: doc.data().impressions,
         image: doc.data().image || '',
-        Approved: doc.data().Approved 
+        Approved: doc.data().Approved,
+        isOnline: doc.data().isOnline || false
       }));
 
       setServices(servicemenList);

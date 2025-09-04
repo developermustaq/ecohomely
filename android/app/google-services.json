@@ -1,0 +1,114 @@
+{
+  "project_info": {
+    "project_number": "820094665311",
+    "project_id": "ecohomely-app",
+    "storage_bucket": "ecohomely-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:820094665311:android:7a96b1d060cad0e00211ea",
+        "android_client_info": {
+          "package_name": "com.ecohomely.partner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "820094665311-4ug80t7p5ghfskuedtcld9f1idbf2jg5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ecohomely.partner",
+            "certificate_hash": "c3103570a66c70e1d33351c5eb1d88d8a9531d9a"
+          }
+        },
+        {
+          "client_id": "820094665311-vmmbt5go5kraobgbshl7ibcd54trgnsg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ecohomely.partner",
+            "certificate_hash": "33e3e16aa21a12dd57993e95242754b8b1f5a86d"
+          }
+        },
+        {
+          "client_id": "820094665311-7tsrummhbnmbltvc77ppdg7d3nuh4koi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCqttwyXNe_MsKVZknP-0igNIlyIasaHQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "820094665311-7tsrummhbnmbltvc77ppdg7d3nuh4koi.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "820094665311-4v2iu4deaiv3dvuvib8b068dqkikbltt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ecohomely.user"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:820094665311:android:0a18c44c3dfb5e850211ea",
+        "android_client_info": {
+          "package_name": "com.ecohomely.user"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "820094665311-lab4auc70d86rortig0irh0h462v35v7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ecohomely.user",
+            "certificate_hash": "da39ae8e2e6521ddd2f867415462e8d0e82a91cd"
+          }
+        },
+        {
+          "client_id": "820094665311-qnvf1m2euass10e75vmn45dlp0d01ocf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ecohomely.user",
+            "certificate_hash": "beefde2b5f5cb8461c3816c8d5807649a7de8bdd"
+          }
+        },
+        {
+          "client_id": "820094665311-7tsrummhbnmbltvc77ppdg7d3nuh4koi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCqttwyXNe_MsKVZknP-0igNIlyIasaHQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "820094665311-7tsrummhbnmbltvc77ppdg7d3nuh4koi.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "820094665311-4v2iu4deaiv3dvuvib8b068dqkikbltt.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ecohomely.user"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

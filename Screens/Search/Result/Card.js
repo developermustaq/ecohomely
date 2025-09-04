@@ -31,7 +31,14 @@ const ResultUi = ({ result, isFavorited, onFavoriteToggle, onItemClick, onCallNo
           accessibilityLabel={`${result.name || t('noName') || 'No name'} ${t('profileImage') || 'profile image'}`} 
         />
         <View style={styles.infoContainer}>
-          <CustomText style={styles.name}>{displayName}</CustomText>
+          <View style={styles.nameContainer}>
+            <CustomText style={styles.name}>{displayName}</CustomText>
+            <View style={[styles.statusIndicator, { backgroundColor: result.isOnline ? '#4CAF50' : '#9E9E9E' }]}>
+              <CustomText style={styles.statusText}>
+                {result.isOnline ? (t?.('online') || 'Online') : (t?.('offline') || 'Offline')}
+              </CustomText>
+            </View>
+          </View>
           <View style={styles.ratingContainer}>
             <Icon name="star" size={16} color="#FFD700" />
             <CustomText 
@@ -132,11 +139,33 @@ const getStyles = (theme) =>
       flex: 1,
       justifyContent: 'center',
     },
+    nameContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginRight: 40,
+    },
     name: {
       fontSize: 15,
       fontWeight: 'bold',
       color: theme === 'light' ? '#000' : '#e5e5e7',
-      marginRight: 40,
+      flex: 1,
+      marginRight: 8,
+    },
+    statusIndicator: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 10,
+      minWidth: 50,
+      alignItems: 'center',
+    },
+    statusText: {
+      fontSize: 9,
+      fontWeight: '600',
+      color: '#fff',
+      textTransform: 'uppercase',
+      letterSpacing: 0.3,
     },
     ratingContainer: {
       flexDirection: 'row',

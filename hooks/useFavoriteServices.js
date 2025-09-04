@@ -37,6 +37,7 @@ function useFavoriteServices(favoriteIds) {
             description: doc.data().description,
             impressions: doc.data().impressions,
             image: doc.data().image || '',
+            isOnline: doc.data().isOnline || false,
           }));
           setServicemen(servicemenList);
           setLoading(false);

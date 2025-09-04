@@ -28,6 +28,7 @@ import {
   Timestamp,
   serverTimestamp,
   increment,
+  onSnapshot,
 } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Ionicons } from '@expo/vector-icons';
@@ -155,6 +156,7 @@ export default function ServiceManDetails() {
   const [isBooked, setIsBooked] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
+  const [offlineConfirmModalVisible, setOfflineConfirmModalVisible] = useState(false);
   const [todayDate, setTodayDate] = useState('');
 
   const styles = useMemo(() => getStyles(theme), [theme]);
@@ -168,7 +170,7 @@ export default function ServiceManDetails() {
 
     setTodayDate(formatDate());
 
-    const fetchData = async () => {
+    const setupDataListener = async () => {
       try {
         if (!serviceId) {
           setError(t('noServiceIdProvided') || 'No service ID provided');
@@ -178,48 +180,70 @@ export default function ServiceManDetails() {
 
         const docRef = doc(db, 'servicemen', serviceId);
         await updateDoc(docRef, { impressions: increment(1) });
-        const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
-          setData(docSnap.data());
-
-          const ratingsRef = collection(db, 'reviews');
-          const q = query(ratingsRef, where('sid', '==', serviceId));
-          const querySnapshot = await getDocs(q);
-
-          if (!querySnapshot.empty) {
-            let totalRating = 0;
-            querySnapshot.forEach((doc) => {
-              totalRating += parseFloat(doc.data().rating);
-            });
-            setAverageRating(totalRating / querySnapshot.size);
-            setReviewCount(querySnapshot.size);
+        // Set up real-time listener for serviceman data
+        const unsubscribeServiceman = onSnapshot(docRef, (docSnap) => {
+          if (docSnap.exists()) {
+            setData(docSnap.data());
+            setLoading(false);
           } else {
-            setAverageRating(0);
-            setReviewCount(0);
+            setError(t('noSuchDocument') || 'No such document!');
+            setLoading(false);
           }
+        });
 
-          const userId = await AsyncStorage.getItem('uid');
-          if (userId) {
-            const userDocRef = doc(db, 'users', userId);
-            const userDocSnap = await getDoc(userDocRef);
-            if (userDocSnap.exists()) {
-              const userData = userDocSnap.data();
-              setIsFavorited(userData.favorites?.includes(serviceId) || false);
-              setIsBooked(userData.bookings?.includes(serviceId) || false);
-            }
-          }
+        // Fetch ratings data (this doesn't need real-time updates)
+        const ratingsRef = collection(db, 'reviews');
+        const q = query(ratingsRef, where('sid', '==', serviceId));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          let totalRating = 0;
+          querySnapshot.forEach((doc) => {
+            totalRating += parseFloat(doc.data().rating);
+          });
+          setAverageRating(totalRating / querySnapshot.size);
+          setReviewCount(querySnapshot.size);
         } else {
-          setError(t('noSuchDocument') || 'No such document!');
+          setAverageRating(0);
+          setReviewCount(0);
         }
+
+        // Fetch user favorites and bookings data
+        const userId = await AsyncStorage.getItem('uid');
+        if (userId) {
+          const userDocRef = doc(db, 'users', userId);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            setIsFavorited(userData.favorites?.includes(serviceId) || false);
+            setIsBooked(userData.bookings?.includes(serviceId) || false);
+          }
+        }
+
+        // Return cleanup function
+        return () => {
+          unsubscribeServiceman();
+        };
       } catch (e) {
-        console.error('Error fetching document: ', e);
+        console.error('Error setting up data listener: ', e);
         setError(t('errorFetchingData') || 'Error fetching data');
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    fetchData();
+    const cleanup = setupDataListener();
+    
+    // Return cleanup function from useEffect
+    return () => {
+      if (cleanup && typeof cleanup.then === 'function') {
+        cleanup.then(unsubscribe => {
+          if (unsubscribe) unsubscribe();
+        });
+      } else if (cleanup) {
+        cleanup();
+      }
+    };
   }, [serviceId, t]);
 
   const toggleFavorite = async () => {
@@ -270,6 +294,22 @@ export default function ServiceManDetails() {
   };
 
   const handleBookNow = async () => {
+    try {
+      // Check if serviceman is offline
+      if (data && data.isOnline === false) {
+        setOfflineConfirmModalVisible(true);
+        return;
+      }
+
+      await proceedWithBooking();
+    } catch (e) {
+      console.error('Error booking service: ', e);
+      setModalMessage(t('errorBookingService') || 'Error booking service');
+      setModalVisible(true);
+    }
+  };
+
+  const proceedWithBooking = async () => {
     try {
       const userId = await AsyncStorage.getItem('uid');
       if (!userId || !serviceId) return;
@@ -472,7 +512,14 @@ export default function ServiceManDetails() {
             <View style={styles.header}>
               <View>
                 <CustomText style={styles.name}>{data.name || t('unknownServiceProvider') || 'Unknown Service Provider'}</CustomText>
-                <CustomText style={styles.profession}>({data.profession || t('unknownProfession') || 'Unknown Profession'})</CustomText>
+                <View style={styles.professionContainer}>
+                  <CustomText style={styles.profession}>({data.profession || t('unknownProfession') || 'Unknown Profession'})</CustomText>
+                  <View style={[styles.statusIndicator, { backgroundColor: data.isOnline ? '#4CAF50' : '#9E9E9E' }]}>
+                    <CustomText style={styles.statusText}>
+                      {data.isOnline ? (t?.('online') || 'Online') : (t?.('offline') || 'Offline')}
+                    </CustomText>
+                  </View>
+                </View>
               </View>
             </View>
 
@@ -617,6 +664,65 @@ export default function ServiceManDetails() {
             </View>
           </View>
         </Modal>
+
+        {/* Offline Confirmation Modal */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={offlineConfirmModalVisible}
+          onRequestClose={() => setOfflineConfirmModalVisible(false)}
+          accessibilityViewIsModal={true}
+        >
+          <View style={[styles.modalOverlay, { backgroundColor: themes[theme].modalOverlay }]}>
+            <View style={[styles.modalContainer, { backgroundColor: themes[theme].modalBackground }]}>
+              <View style={styles.modalView}>
+                <TouchableOpacity
+                  style={[styles.closeButton, { borderColor: themes[theme].border }]}
+                  onPress={() => setOfflineConfirmModalVisible(false)}
+                  accessibilityLabel={t('closeModal') || 'Close modal'}
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="close-outline" size={24} color={themes[theme].iconPrimary} />
+                </TouchableOpacity>
+
+                <View style={styles.offlineIconContainer}>
+                  <View style={[styles.offlineIcon, { borderColor: themes[theme].border }]}>
+                    <Ionicons name="wifi-outline" size={40} color="#9E9E9E" />
+                  </View>
+                </View>
+
+                <CustomText style={styles.modalTitle}>
+                  {t('servicemanOffline') || 'Serviceman is currently offline'}
+                </CustomText>
+                <CustomText style={[styles.modalSubTitle, { color: themes[theme].textSecondary }]}>
+                  {t('offlineMessage') || 'This serviceman is currently offline and may not be available for immediate service. Would you like to proceed with the booking anyway?'}
+                </CustomText>
+
+                <View style={styles.offlineModalButtons}>
+                  <TouchableOpacity
+                    style={[styles.offlineModalButton, { backgroundColor: themes[theme].buttonSecondary }]}
+                    onPress={() => setOfflineConfirmModalVisible(false)}
+                  >
+                    <CustomText style={[styles.offlineModalButtonText, { color: themes[theme].buttonText }]}>
+                      {t('cancel') || 'Cancel'}
+                    </CustomText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.offlineModalButton, { backgroundColor: themes[theme].buttonPrimary }]}
+                    onPress={async () => {
+                      setOfflineConfirmModalVisible(false);
+                      await proceedWithBooking();
+                    }}
+                  >
+                    <CustomText style={[styles.offlineModalButtonText, { color: themes[theme].buttonText }]}>
+                      {t('proceedAnyway') || 'Proceed Anyway'}
+                    </CustomText>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
 
       <View style={[styles.cardContainer, { backgroundColor: themes[theme].background }]}>
@@ -754,11 +860,31 @@ const getStyles = (theme) => {
       color: colors.textPrimary,
       marginHorizontal: 10,
     },
+    professionContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+      marginHorizontal: 10,
+      gap: 10,
+    },
     profession: {
       fontSize: 16,
       color: colors.textSecondary,
-      marginBottom: 16,
-      marginHorizontal: 10,
+    },
+    statusIndicator: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 12,
+      minWidth: 60,
+      alignItems: 'center',
+    },
+    statusText: {
+      fontSize: 10,
+      fontWeight: '600',
+      color: '#fff',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     ratingContainer: {
       flexDirection: 'row',
@@ -897,6 +1023,39 @@ const getStyles = (theme) => {
       fontSize: 16,
       color: colors.success,
       marginTop: 5,
+    },
+    offlineIconContainer: {
+      marginTop: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    offlineIcon: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      borderWidth: 3,
+      borderColor: colors.border,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    offlineModalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%',
+      marginTop: 20,
+      gap: 10,
+    },
+    offlineModalButton: {
+      flex: 1,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 25,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    offlineModalButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
     },
   });
 };

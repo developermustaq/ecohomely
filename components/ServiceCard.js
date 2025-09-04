@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import CustomText from '../CustomText';
 import { ThemeContext } from '../theme/ThemeContext'; 
 
-function ServiceCard({ service, isFavorited, onToggleFavorite, onCallNow, onChat, onPress }) {
+function ServiceCard({ service, isFavorited, onToggleFavorite, onCallNow, onChat, onPress, t }) {
   const { theme } = useContext(ThemeContext);
   const styles = getStyles(theme);
 
@@ -13,7 +13,14 @@ function ServiceCard({ service, isFavorited, onToggleFavorite, onCallNow, onChat
       <Image source={{ uri: service.image }} style={styles.image} />
       <View style={styles.info}>
         <View style={styles.headerInfo}>
-          <CustomText style={styles.name}>{service.profession}</CustomText>
+          <View style={styles.nameContainer}>
+            <CustomText style={styles.name}>{service.profession}</CustomText>
+            <View style={[styles.statusIndicator, { backgroundColor: service.isOnline ? '#4CAF50' : '#9E9E9E' }]}>
+              <CustomText style={styles.statusText}>
+                {service.isOnline ? (t?.('online') || 'Online') : (t?.('offline') || 'Offline')}
+              </CustomText>
+            </View>
+          </View>
           <TouchableOpacity onPress={onToggleFavorite} style={styles.favoriteButton}>
             <Icon
               name={isFavorited ? 'heart' : 'heart-outline'}
@@ -89,13 +96,33 @@ const getStyles = (theme) =>
     headerInfo: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       marginBottom: 5,
+    },
+    nameContainer: {
+      flex: 1,
+      marginRight: 10,
     },
     name: {
       fontSize: 16,
       fontWeight: 'bold',
       color: theme === 'light' ? '#000' : '#e5e5e7',
+      marginBottom: 4,
+    },
+    statusIndicator: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 12,
+      minWidth: 60,
+      alignItems: 'center',
+    },
+    statusText: {
+      fontSize: 10,
+      fontWeight: '600',
+      color: '#fff',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     favoriteButton: {
       padding: 5,
