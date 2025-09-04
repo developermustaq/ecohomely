@@ -70,11 +70,18 @@ const BookingCard = ({
           style={styles.profileImage}
           accessibilityLabel={`${serviceman.name || t('serviceProvider') || 'Service Provider'} ${t('profileImage') || 'profile image'}`} 
         />
-        <View style={styles.profileInfo}>
-          <View style={styles.headerSection}>
-            <CustomText style={styles.name}>
-              {serviceman.name || t('serviceProvider') || 'Service Provider'}
-            </CustomText>
+                  <View style={styles.profileInfo}>
+            <View style={styles.headerSection}>
+              <View style={styles.nameContainer}>
+                <CustomText style={styles.name}>
+                  {serviceman.name || t('serviceProvider') || 'Service Provider'}
+                </CustomText>
+                <View style={[styles.statusIndicator, { backgroundColor: serviceman.isOnline ? '#4CAF50' : '#9E9E9E' }]}>
+                  <CustomText style={styles.statusText}>
+                    {serviceman.isOnline ? (t?.('online') || 'Online') : (t?.('offline') || 'Offline')}
+                  </CustomText>
+                </View>
+              </View>
             <TouchableOpacity
               style={styles.favoriteButton}
               onPress={() => toggleFavorite(serviceman.id)}
@@ -223,11 +230,29 @@ const getStyles = (theme) => {
       alignItems: 'flex-start',
       marginBottom: 5,
     },
+    nameContainer: {
+      flex: 1,
+      marginRight: 10,
+    },
     name: {
       fontSize: 18,
       color: colors.textPrimary,
-      flexShrink: 1,
-      marginRight: 10,
+      marginBottom: 4,
+    },
+    statusIndicator: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 12,
+      minWidth: 60,
+      alignItems: 'center',
+    },
+    statusText: {
+      fontSize: 10,
+      fontWeight: '600',
+      color: '#fff',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     favoriteButton: {
       padding: 5,

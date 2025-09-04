@@ -109,7 +109,7 @@ const BookingsPage = () => {
     });
   };
 
-  const setupServicemanRatingListener = (servicemanId, bookingId) => {
+  const setupServicemanDataListener = (servicemanId, bookingId) => {
     const servicemanRef = doc(db, 'servicemen', servicemanId);
     return onSnapshot(servicemanRef, (doc) => {
       if (doc.exists()) {
@@ -122,6 +122,7 @@ const BookingsPage = () => {
                 serviceman: {
                   ...booking.serviceman,
                   avgRating: servicemanData.avgRating || 0,
+                  isOnline: servicemanData.isOnline || false,
                 },
               };
             }
@@ -168,12 +169,13 @@ const BookingsPage = () => {
                 image: servicemanData.image,
                 address: servicemanData.address,
                 avgRating,
+                isOnline: servicemanData.isOnline || false,
               },
             };
 
             const newListeners = {
               review: setupReviewListener(change.doc.id),
-              rating: setupServicemanRatingListener(bookingData.sid, change.doc.id),
+              serviceman: setupServicemanDataListener(bookingData.sid, change.doc.id),
             };
 
             setReviewListeners((prev) => ({
@@ -228,7 +230,7 @@ const BookingsPage = () => {
 
         Object.values(reviewListeners).forEach((listener) => {
           if (listener.review) listener.review();
-          if (listener.rating) listener.rating();
+          if (listener.serviceman) listener.serviceman();
         });
         const newListeners = {};
 
@@ -252,7 +254,7 @@ const BookingsPage = () => {
             const avgRating = servicemanData.avgRating || 0;
             newListeners[bookingDoc.id] = {
               review: setupReviewListener(bookingDoc.id),
-              rating: setupServicemanRatingListener(bookingData.sid, bookingDoc.id),
+              serviceman: setupServicemanDataListener(bookingData.sid, bookingDoc.id),
             };
             bookingList.push({
               id: bookingDoc.id,
@@ -266,6 +268,7 @@ const BookingsPage = () => {
                 image: servicemanData.image,
                 address: servicemanData.address,
                 avgRating,
+                isOnline: servicemanData.isOnline || false,
               },
             });
           }
@@ -336,7 +339,7 @@ const BookingsPage = () => {
             const avgRating = servicemanData.avgRating || 0;
             newListeners[bookingDoc.id] = {
               review: setupReviewListener(bookingDoc.id),
-              rating: setupServicemanRatingListener(bookingData.sid, bookingDoc.id),
+              serviceman: setupServicemanDataListener(bookingData.sid, bookingDoc.id),
             };
             newBookingList.push({
               id: bookingDoc.id,
@@ -350,6 +353,7 @@ const BookingsPage = () => {
                 image: servicemanData.image,
                 address: servicemanData.address,
                 avgRating,
+                isOnline: servicemanData.isOnline || false,
               },
             });
           }
@@ -429,7 +433,7 @@ const BookingsPage = () => {
         if (favoritesUnsubscribe) favoritesUnsubscribe();
         Object.values(reviewListeners).forEach((listeners) => {
           if (listeners.review) listeners.review();
-          if (listeners.rating) listeners.rating();
+          if (listeners.serviceman) listeners.serviceman();
         });
       };
     };

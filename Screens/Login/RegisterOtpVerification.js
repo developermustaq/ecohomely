@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Alert, StatusBar } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../../utils/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { setConfirmation, getConfirmation, clearConfirmation } from './OtpConfirmation';
@@ -97,25 +97,27 @@ const RegisterOtpVerification = ({ navigation }) => {
   
       const result = await confirmation.confirm(otpString);
   
-      if (result) {
+            if (result) {
         const user = result.user;
-  
+        const firebaseUid = user.uid;
+
         const email = await AsyncStorage.getItem('email');
         const name = await AsyncStorage.getItem('name');
-  
+
         if (!email || !name) {
           Alert.alert(t('error') || 'Error', t('userInformationMissing') || 'User information is missing. Please try again.');
           setIsLoading(false);
           return;
         }
-  
-        const userRef = await addDoc(collection(db, 'users'), {
+
+        const userRef = doc(db, 'users', firebaseUid);
+        await setDoc(userRef, {
           phone: phoneNumber.replace('+91', '').trim(),
           email,
           name,
         });
-  
-        await AsyncStorage.setItem('uid', userRef.id);
+
+        await AsyncStorage.setItem('uid', firebaseUid);
         navigation.replace('SetProfile');
       } else {
         setIncorrectOtp(true);
