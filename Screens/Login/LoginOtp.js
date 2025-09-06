@@ -12,8 +12,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import auth from '@react-native-firebase/auth';
-import { db } from '../../utils/firebase';
+import { db, firebaseAuth } from '../../utils/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import CustomText from '../../CustomText';
 import { setConfirmation } from './OtpConfirmation';
@@ -59,7 +58,7 @@ const PhoneNumberInput = () => {
       const userExists = await checkUserExists(phoneNumber);
 
       if (userExists) {
-        const confirmation = await auth().signInWithPhoneNumber(fullPhoneNumber);
+        const confirmation = await firebaseAuth.signInWithPhoneNumber(fullPhoneNumber);
         setConfirmation(confirmation);
         await AsyncStorage.setItem('phoneNumber', fullPhoneNumber);
         navigation.replace('OtpVerification');

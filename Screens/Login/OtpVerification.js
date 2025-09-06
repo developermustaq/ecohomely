@@ -3,7 +3,7 @@ import { View, TextInput, TouchableOpacity, StyleSheet, Alert, StatusBar } from 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../../utils/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import auth from '@react-native-firebase/auth';
+import { firebaseAuth } from '../../utils/firebase';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { setConfirmation, getConfirmation, clearConfirmation } from './OtpConfirmation';
 import CustomText from '../../CustomText';
@@ -142,7 +142,7 @@ const OtpVerification = ({ navigation }) => {
 
     try {
       const fullPhoneNumber = phoneNumber.startsWith('+91') ? phoneNumber : `+91${phoneNumber}`;
-      const confirmationResult = await auth().signInWithPhoneNumber(fullPhoneNumber);
+      const confirmationResult = await firebaseAuth.signInWithPhoneNumber(fullPhoneNumber);
       setConfirmation(confirmationResult);
       setCodeResent(true);
       setTimer(25);
